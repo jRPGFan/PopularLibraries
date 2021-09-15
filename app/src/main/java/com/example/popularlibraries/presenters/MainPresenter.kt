@@ -1,37 +1,21 @@
 package com.example.popularlibraries.presenters
 
-import com.example.popularlibraries.interfaces.MainView
-import com.example.popularlibraries.models.CountersModel
+import com.example.popularlibraries.MainView
+import com.example.popularlibraries.model.GithubUser
+import com.example.popularlibraries.model.GithubUsersRepo
+import com.example.popularlibraries.presentation.IUserListPresenter
+import com.example.popularlibraries.screens.IScreens
+import com.example.popularlibraries.view.UserItemView
+import com.github.terrakok.cicerone.Router
+import moxy.MvpPresenter
 
-class MainPresenter(private val view: MainView) {
-    private val model = CountersModel()
-
-    fun counterOneClick() {
-        val nextValue = model.next(0)
-        view.setCounterOneText(nextValue.toString())
+class MainPresenter(val router: Router, val screens: IScreens) : MvpPresenter<MainView>() {
+    override fun onFirstViewAttach() {
+        super.onFirstViewAttach()
+        router.replaceScreen(screens.users())
     }
 
-    fun counterTwoClick() {
-        val nextValue = model.next(1)
-        view.setCounterTwoText(nextValue.toString())
-    }
-
-    fun counterThreeClick() {
-        val nextValue = model.next(2)
-        view.setCounterThreeText(nextValue.toString())
-    }
-
-    fun initCounters() {
-        view.setCounterOneText(model.getCurrent(0).toString())
-        view.setCounterTwoText(model.getCurrent(1).toString())
-        view.setCounterThreeText(model.getCurrent(2).toString())
-    }
-
-    fun getCounters(): MutableList<Int> {
-        return model.getCounters()
-    }
-
-    fun setCounters(savedCounters: IntArray) {
-        model.setCounters(savedCounters)
+    fun backClicked() {
+        router.exit()
     }
 }

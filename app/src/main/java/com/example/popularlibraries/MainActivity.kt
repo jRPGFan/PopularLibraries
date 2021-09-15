@@ -1,59 +1,43 @@
 package com.example.popularlibraries
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.os.PersistableBundle
 import com.example.popularlibraries.databinding.ActivityMainBinding
-import com.example.popularlibraries.interfaces.MainView
 import com.example.popularlibraries.presenters.MainPresenter
+import com.example.popularlibraries.screens.AndroidScreens
+import com.example.popularlibraries.view.ui.BackButtonListener
+import com.github.terrakok.cicerone.androidx.AppNavigator
+import moxy.MvpAppCompatActivity
+import moxy.ktx.moxyPresenter
 
-const val IS_COUNTERS = "counters"
-
-class MainActivity : AppCompatActivity(), MainView {
+class MainActivity : MvpAppCompatActivity(), MainView {
 
     private var _viewBinding: ActivityMainBinding? = null
     private val viewBinding get() = _viewBinding!!
-    private val presenter = MainPresenter(this)
+    private val presenter by moxyPresenter { MainPresenter(App.instance.router, AndroidScreens()) }
+    private val navigator = AppNavigator(this, R.id.container)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         _viewBinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(viewBinding.root)
-
-        viewBinding.counterButton1.setOnClickListener { presenter.counterOneClick() }
-        viewBinding.counterButton2.setOnClickListener { presenter.counterTwoClick() }
-        viewBinding.counterButton3.setOnClickListener { presenter.counterThreeClick() }
-        presenter.initCounters()
     }
 
-    override fun setCounterOneText(text: String) {
-        viewBinding.counterButton1.text = text
+    override fun onResumeFragments() {
+        super.onResumeFragments()
+        App.instance.navigationHolder.setNavigator(navigator)
     }
 
-    override fun setCounterTwoText(text: String) {
-        viewBinding.counterButton2.text = text
+    override fun onPause() {
+        super.onPause()
+        App.instance.navigationHolder.removeNavigator()
     }
 
-    override fun setCounterThreeText(text: String) {
-        viewBinding.counterButton3.text = text
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putIntArray(IS_COUNTERS, presenter.getCounters().toIntArray())
-    }
-
-    override fun onSaveInstanceState(outState: Bundle, outPersistentState: PersistableBundle) {
-        super.onSaveInstanceState(outState, outPersistentState)
-        outState.putIntArray(IS_COUNTERS, presenter.getCounters().toIntArray())
-    }
-
-    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
-        super.onRestoreInstanceState(savedInstanceState)
-        val countersArray = savedInstanceState.getIntArray(IS_COUNTERS)
-        countersArray?.let {
-            presenter.setCounters(countersArray)
+    override fun onBackPressed() {
+        supportFragmentManager.fragments.forEach {
+            if (it is BackButtonListener && it.backPressed()) {
+                return
+            }
         }
-        presenter.initCounters()
+        presenter.backClicked()
     }
 }

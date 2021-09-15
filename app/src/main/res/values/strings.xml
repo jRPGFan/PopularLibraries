@@ -1,7 +1,3 @@
 <resources>
     <string name="app_name">PopularLibraries</string>
-    <string name="counter_one">counter one</string>
-    <string name="counter_two">counter two</string>
-    <string name="counter_default">0</string>
-    <string name="counter_three">counter three</string>
 </resources>
