@@ -1,6 +1,8 @@
 package com.example.popularlibraries.model
 
-class GithubUsersRepo {
+import io.reactivex.rxjava3.core.Single
+
+object GithubUsersRepo : IGithubUsersRepo {
     private val repositories = listOf(
         GithubUser("login1"),
         GithubUser("login2"),
@@ -9,5 +11,5 @@ class GithubUsersRepo {
         GithubUser("login5")
     )
 
-    fun getUsers() = repositories
+    override fun getUsers(): Single<List<GithubUser>> = Single.just(repositories)
 }

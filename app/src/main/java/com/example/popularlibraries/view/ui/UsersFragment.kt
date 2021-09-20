@@ -9,13 +9,20 @@ import com.example.popularlibraries.App
 import com.example.popularlibraries.databinding.FragmentUsersBinding
 import com.example.popularlibraries.model.GithubUsersRepo
 import com.example.popularlibraries.presentation.UsersPresenter
+import com.example.popularlibraries.screens.AndroidScreens
 import moxy.MvpAppCompatFragment
 import moxy.ktx.moxyPresenter
 
 class UsersFragment : MvpAppCompatFragment(), UsersView, BackButtonListener {
     private var _viewBinding: FragmentUsersBinding? = null
     private val viewBinding get() = _viewBinding!!
-    private val presenter by moxyPresenter { UsersPresenter(GithubUsersRepo(), App.instance.router) }
+    private val presenter by moxyPresenter {
+        UsersPresenter(
+            GithubUsersRepo,
+            App.instance.router,
+            AndroidScreens()
+        )
+    }
     private var adapter: UsersRVAdapter? = null
 
     override fun onCreateView(

@@ -2,13 +2,18 @@ package com.example.popularlibraries.presentation
 
 import com.example.popularlibraries.model.GithubUser
 import com.example.popularlibraries.model.GithubUsersRepo
-import com.example.popularlibraries.screens.UserInfoScreen
+import com.example.popularlibraries.screens.IScreens
 import com.example.popularlibraries.view.UserItemView
 import com.example.popularlibraries.view.ui.UsersView
 import com.github.terrakok.cicerone.Router
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import moxy.MvpPresenter
 
-class UsersPresenter(val usersRepo: GithubUsersRepo, val router: Router) :
+class UsersPresenter(
+    private val usersRepo: GithubUsersRepo,
+    private val router: Router,
+    private val screens: IScreens
+) :
     MvpPresenter<UsersView>() {
     class UsersListPresenter : IUserListPresenter {
         val users = mutableListOf<GithubUser>()
@@ -28,14 +33,16 @@ class UsersPresenter(val usersRepo: GithubUsersRepo, val router: Router) :
         loadData()
 
         usersListPresenter.itemClickListener = { itemView ->
-            router.navigateTo(UserInfoScreen(usersListPresenter.users[itemView.pos]).createFragment())
+            router.navigateTo(screens.showUser(usersListPresenter.users[itemView.pos]))
         }
     }
 
     private fun loadData() {
-        val users = usersRepo.getUsers()
-        usersListPresenter.users.addAll(users)
-        viewState.update()
+        usersRepo.getUsers().observeOn(AndroidSchedulers.mainThread())
+            .subscribe { users ->
+                usersListPresenter.users.addAll(users)
+                viewState.update()
+            }
     }
 
     fun backPressed(): Boolean {
