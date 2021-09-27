@@ -6,10 +6,14 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.popularlibraries.App
 import com.example.popularlibraries.databinding.FragmentUserInfoBinding
+import com.example.popularlibraries.model.ApiHolder
 import com.example.popularlibraries.model.GithubUser
+import com.example.popularlibraries.model.GithubUsersRepo
 import com.example.popularlibraries.presentation.UserPresenter
+import com.example.popularlibraries.screens.AndroidScreens
 import moxy.MvpAppCompatFragment
 import moxy.ktx.moxyPresenter
 
@@ -22,9 +26,12 @@ class UserInfoFragment : MvpAppCompatFragment(), UserInfoView, BackButtonListene
     private val presenter by moxyPresenter {
         UserPresenter(
             user,
-            App.instance.router
+            GithubUsersRepo(ApiHolder.api),
+            App.instance.router,
+            AndroidScreens()
         )
     }
+    private var adapter: ReposRVAdapter? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -37,6 +44,16 @@ class UserInfoFragment : MvpAppCompatFragment(), UserInfoView, BackButtonListene
 
     override fun setUsername(username: String) {
         viewBinding.userID.text = username
+    }
+
+    override fun init() {
+        viewBinding.userRepos.layoutManager = LinearLayoutManager(requireContext())
+        adapter = ReposRVAdapter(presenter.reposListPresent)
+        viewBinding.userRepos.adapter = adapter
+    }
+
+    override fun update() {
+        adapter?.notifyDataSetChanged()
     }
 
     override fun backPressed() = presenter.backPressed()

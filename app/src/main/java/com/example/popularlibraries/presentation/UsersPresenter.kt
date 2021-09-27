@@ -1,16 +1,19 @@
 package com.example.popularlibraries.presentation
 
+import android.util.Log
 import com.example.popularlibraries.model.GithubUser
-import com.example.popularlibraries.model.GithubUsersRepo
+import com.example.popularlibraries.model.IGithubUsersRepo
 import com.example.popularlibraries.screens.IScreens
 import com.example.popularlibraries.view.UserItemView
 import com.example.popularlibraries.view.ui.UsersView
 import com.github.terrakok.cicerone.Router
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.core.Scheduler
 import moxy.MvpPresenter
+import timber.log.Timber
 
 class UsersPresenter(
-    private val usersRepo: GithubUsersRepo,
+    private val uiScheduler: Scheduler,
+    private val usersRepo: IGithubUsersRepo,
     private val router: Router,
     private val screens: IScreens
 ) :
@@ -21,7 +24,8 @@ class UsersPresenter(
         override fun getCount() = users.size
         override fun bindView(view: UserItemView) {
             val user = users[view.pos]
-            view.setLogin(user.login)
+            user.login?.let { view.setLogin(it) }
+            user.avatarUrl?.let { view.setAvatar(it) }
         }
     }
 
@@ -38,11 +42,14 @@ class UsersPresenter(
     }
 
     private fun loadData() {
-        usersRepo.getUsers().observeOn(AndroidSchedulers.mainThread())
-            .subscribe { users ->
+        usersRepo.getUsers().observeOn(uiScheduler)
+            .subscribe({ users ->
+                usersListPresenter.users.clear()
                 usersListPresenter.users.addAll(users)
                 viewState.update()
-            }
+            }, {
+                Timber.log(Log.ERROR, it.message)
+            })
     }
 
     fun backPressed(): Boolean {
