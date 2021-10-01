@@ -9,11 +9,13 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.popularlibraries.App
 import com.example.popularlibraries.databinding.FragmentUserInfoBinding
-import com.example.popularlibraries.model.ApiHolder
+import com.example.popularlibraries.model.GithubRepositoriesRepo
 import com.example.popularlibraries.model.GithubUser
-import com.example.popularlibraries.model.GithubUsersRepo
+import com.example.popularlibraries.model.room.RoomDB
+import com.example.popularlibraries.model.room.RoomGithubRepositoriesCache
 import com.example.popularlibraries.presentation.UserPresenter
 import com.example.popularlibraries.screens.AndroidScreens
+import com.example.popularlibraries.utils.AndroidNetworkStatus
 import moxy.MvpAppCompatFragment
 import moxy.ktx.moxyPresenter
 
@@ -26,7 +28,11 @@ class UserInfoFragment : MvpAppCompatFragment(), UserInfoView, BackButtonListene
     private val presenter by moxyPresenter {
         UserPresenter(
             user,
-            GithubUsersRepo(ApiHolder.api),
+            GithubRepositoriesRepo(
+                AndroidNetworkStatus(requireContext()),
+                RoomDB.getInstance(),
+                RoomGithubRepositoriesCache()
+            ),
             App.instance.router,
             AndroidScreens()
         )

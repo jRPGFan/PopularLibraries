@@ -7,10 +7,12 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.popularlibraries.App
 import com.example.popularlibraries.databinding.FragmentUsersBinding
-import com.example.popularlibraries.model.ApiHolder
 import com.example.popularlibraries.model.GithubUsersRepo
+import com.example.popularlibraries.model.room.RoomDB
+import com.example.popularlibraries.model.room.RoomGithubUsersCache
 import com.example.popularlibraries.presentation.UsersPresenter
 import com.example.popularlibraries.screens.AndroidScreens
+import com.example.popularlibraries.utils.AndroidNetworkStatus
 import com.example.popularlibraries.view.GlideImageLoader
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import moxy.MvpAppCompatFragment
@@ -22,7 +24,11 @@ class UsersFragment : MvpAppCompatFragment(), UsersView, BackButtonListener {
     private val presenter by moxyPresenter {
         UsersPresenter(
             AndroidSchedulers.mainThread(),
-            GithubUsersRepo(ApiHolder.api),
+            GithubUsersRepo(
+                AndroidNetworkStatus(requireContext()),
+                RoomDB.getInstance(),
+                RoomGithubUsersCache()
+            ),
             App.instance.router,
             AndroidScreens()
         )

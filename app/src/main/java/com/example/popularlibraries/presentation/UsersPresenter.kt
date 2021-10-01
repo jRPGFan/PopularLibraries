@@ -2,7 +2,8 @@ package com.example.popularlibraries.presentation
 
 import android.util.Log
 import com.example.popularlibraries.model.GithubUser
-import com.example.popularlibraries.model.IGithubUsersRepo
+import com.example.popularlibraries.model.GithubUserRepository
+import com.example.popularlibraries.model.GithubUsersRepo
 import com.example.popularlibraries.screens.IScreens
 import com.example.popularlibraries.view.UserItemView
 import com.example.popularlibraries.view.ui.UsersView
@@ -13,7 +14,7 @@ import timber.log.Timber
 
 class UsersPresenter(
     private val uiScheduler: Scheduler,
-    private val usersRepo: IGithubUsersRepo,
+    private val usersRepo: GithubUsersRepo,
     private val router: Router,
     private val screens: IScreens
 ) :
