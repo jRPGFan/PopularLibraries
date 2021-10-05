@@ -4,6 +4,7 @@ import android.util.Log
 import com.example.popularlibraries.model.GithubUser
 import com.example.popularlibraries.model.GithubUserRepository
 import com.example.popularlibraries.model.GithubUsersRepo
+import com.example.popularlibraries.model.IGithubUsersRepo
 import com.example.popularlibraries.screens.IScreens
 import com.example.popularlibraries.view.UserItemView
 import com.example.popularlibraries.view.ui.UsersView
@@ -11,14 +12,16 @@ import com.github.terrakok.cicerone.Router
 import io.reactivex.rxjava3.core.Scheduler
 import moxy.MvpPresenter
 import timber.log.Timber
+import javax.inject.Inject
 
-class UsersPresenter(
-    private val uiScheduler: Scheduler,
-    private val usersRepo: GithubUsersRepo,
-    private val router: Router,
-    private val screens: IScreens
-) :
-    MvpPresenter<UsersView>() {
+class UsersPresenter(private val uiScheduler: Scheduler) : MvpPresenter<UsersView>() {
+    @Inject
+    lateinit var usersRepo: IGithubUsersRepo
+    @Inject
+    lateinit var router: Router
+    @Inject
+    lateinit var screens: IScreens
+
     class UsersListPresenter : IUserListPresenter {
         val users = mutableListOf<GithubUser>()
         override var itemClickListener: ((UserItemView) -> Unit)? = null

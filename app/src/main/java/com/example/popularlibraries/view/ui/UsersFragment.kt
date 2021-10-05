@@ -17,21 +17,16 @@ import com.example.popularlibraries.view.GlideImageLoader
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import moxy.MvpAppCompatFragment
 import moxy.ktx.moxyPresenter
+import javax.inject.Inject
 
 class UsersFragment : MvpAppCompatFragment(), UsersView, BackButtonListener {
+
     private var _viewBinding: FragmentUsersBinding? = null
     private val viewBinding get() = _viewBinding!!
     private val presenter by moxyPresenter {
         UsersPresenter(
-            AndroidSchedulers.mainThread(),
-            GithubUsersRepo(
-                AndroidNetworkStatus(requireContext()),
-                RoomDB.getInstance(),
-                RoomGithubUsersCache()
-            ),
-            App.instance.router,
-            AndroidScreens()
-        )
+            AndroidSchedulers.mainThread()
+        ).apply { App.instance.appComponent.inject(this) }
     }
     private var adapter: UsersRVAdapter? = null
 

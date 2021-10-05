@@ -10,14 +10,20 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.schedulers.Schedulers
 import moxy.MvpPresenter
 import timber.log.Timber
+import javax.inject.Inject
 
 class UserPresenter(
-    private val user: GithubUser?,
-    private val usersRepo: GithubRepositoriesRepo,
-    private val router: Router,
-    private val screens: IScreens
-) :
-    MvpPresenter<UserInfoView>() {
+    private val user: GithubUser?
+) : MvpPresenter<UserInfoView>() {
+    @Inject
+    lateinit var repositoriesRepo: IGithubRepositoriesRepo
+
+    @Inject
+    lateinit var router: Router
+
+    @Inject
+    lateinit var screens: IScreens
+
     class RepoListPresenter : IUserRepoListPresenter {
         val repos = mutableListOf<GithubUserRepository>()
         override var itemClickListener: ((UserReposView) -> Unit)? = null
@@ -42,7 +48,7 @@ class UserPresenter(
     }
 
     private fun loadRepos(user: GithubUser) {
-        usersRepo.getRepositories(user).subscribeOn(Schedulers.io())
+        repositoriesRepo.getRepositories(user).subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ repos ->
                 reposListPresent.repos.clear()

@@ -5,9 +5,9 @@ import com.example.popularlibraries.model.GithubUser
 import io.reactivex.rxjava3.core.Single
 import timber.log.Timber
 
-class RoomGithubUsersCache() : IRoomGithubUsersCache {
+class RoomGithubUsersCache(private val database: RoomDB) : IRoomGithubUsersCache {
 
-    override fun cacheRoomUsers(githubUsers: Single<List<GithubUser>>, db: RoomDB) {
+    override fun cacheRoomUsers(githubUsers: Single<List<GithubUser>>) {
         githubUsers.flatMap { users ->
             Single.fromCallable {
                 val roomUsers = users.map { user ->
@@ -18,7 +18,7 @@ class RoomGithubUsersCache() : IRoomGithubUsersCache {
                         reposUrl = user.reposUrl ?: ""
                     )
                 }
-                db.userDao.insert(roomUsers)
+                database.userDao.insert(roomUsers)
                 return@fromCallable users.size.toString()
             }
         }.map { it }.subscribe { s ->

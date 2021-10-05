@@ -5,12 +5,14 @@ import com.example.popularlibraries.model.room.RoomDB
 import com.example.popularlibraries.utils.INetworkStatus
 import io.reactivex.rxjava3.core.Single
 
-class GithubRepositoriesRepo(private val networkStatus: INetworkStatus, private val db: RoomDB,
-private val reposCache: IRoomGithubRepositoriesCache) {
-    fun getRepositories(user: GithubUser): Single<List<GithubUserRepository>> =
+class GithubRepositoriesRepo(
+    private val api: IApiHolder, private val networkStatus: INetworkStatus, private val db: RoomDB,
+    private val reposCache: IRoomGithubRepositoriesCache
+): IGithubRepositoriesRepo {
+    override fun getRepositories(user: GithubUser): Single<List<GithubUserRepository>> =
         networkStatus.isOnlineSingle().flatMap { isOnline ->
             if (isOnline) {
-                val repos = ApiHolder.api.loadUserRepos(user.reposUrl.orEmpty())
+                val repos = api.apiService.loadUserRepos(user.reposUrl.orEmpty())
                 reposCache.cacheRoomRepos(repos, db, user)
                 return@flatMap repos
             } else {
