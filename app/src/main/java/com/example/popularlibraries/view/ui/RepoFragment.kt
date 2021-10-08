@@ -25,7 +25,7 @@ class RepoFragment : MvpAppCompatFragment(), UserRepoView, BackButtonListener {
     private val viewBinding get() = _viewBinding!!
     private val repo: GithubUserRepository? by lazy { arguments?.getParcelable(USER_REPO) }
     private val presenter by moxyPresenter {
-        RepoPresenter(repo).apply { App.instance.appComponent.inject(this) }
+        RepoPresenter(repo).apply { App.instance.repositorySubcomponent?.inject(this) }
     }
 
     override fun onCreateView(

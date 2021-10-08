@@ -30,7 +30,7 @@ class UserInfoFragment : MvpAppCompatFragment(), UserInfoView, BackButtonListene
     private val viewBinding get() = _viewBinding!!
     private val user: GithubUser? by lazy { arguments?.getParcelable(USER_INFO) }
     private val presenter by moxyPresenter {
-        UserPresenter(user).apply { App.instance.appComponent.inject(this) }
+        UserPresenter(user).apply { App.instance.initRepositorySubcomponent()?.inject(this) }
     }
     private var adapter: ReposRVAdapter? = null
 

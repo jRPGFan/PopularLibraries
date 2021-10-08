@@ -1,6 +1,7 @@
 package com.example.popularlibraries.presentation
 
 import android.util.Log
+import com.example.popularlibraries.App
 import com.example.popularlibraries.model.*
 import com.example.popularlibraries.screens.IScreens
 import com.example.popularlibraries.view.UserReposView
@@ -16,7 +17,7 @@ class UserPresenter(
     private val user: GithubUser?
 ) : MvpPresenter<UserInfoView>() {
     @Inject
-    lateinit var repositoriesRepo: IGithubRepositoriesRepo
+    lateinit var repositoriesRepo: GithubRepositoriesRepo
 
     @Inject
     lateinit var router: Router
@@ -45,6 +46,11 @@ class UserPresenter(
         reposListPresent.itemClickListener = { userReposView ->
             router.navigateTo(screens.showRepo(reposListPresent.repos[userReposView.pos]))
         }
+    }
+
+    override fun onDestroy() {
+        App.instance.releaseRepositoryScope()
+        super.onDestroy()
     }
 
     private fun loadRepos(user: GithubUser) {

@@ -6,23 +6,17 @@ import com.example.popularlibraries.utils.INetworkStatus
 import io.reactivex.rxjava3.core.Single
 
 class GithubRepositoriesRepo(
-    private val api: IApiHolder, private val networkStatus: INetworkStatus, private val db: RoomDB,
+    private val api: IApiHolder,
+    private val networkStatus: INetworkStatus,
     private val reposCache: IRoomGithubRepositoriesCache
-): IGithubRepositoriesRepo {
-    override fun getRepositories(user: GithubUser): Single<List<GithubUserRepository>> =
+) {
+    fun getRepositories(user: GithubUser): Single<List<GithubUserRepository>> =
         networkStatus.isOnlineSingle().flatMap { isOnline ->
             if (isOnline) {
-                val repos = api.apiService.loadUserRepos(user.reposUrl.orEmpty())
-                reposCache.cacheRoomRepos(repos, db, user)
-                return@flatMap repos
-            } else {
-                Single.fromCallable {
-                    val roomUser = user.login?.let { db.userDao.findByLogin(it) }
-                        ?: throw RuntimeException("User not found")
-                    db.repositoryDao.findForUser(roomUser.id).map {
-                        GithubUserRepository(it.id, it.name, it.forksCount)
-                    }
+                api.apiService.loadUserRepos(user.reposUrl.orEmpty()).flatMap { repositories ->
+                    reposCache.cacheRoomRepos(user, repositories).toSingleDefault(repositories)
                 }
-            }
+            } else
+                reposCache.getUserRepos(user)
         }
 }

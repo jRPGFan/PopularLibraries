@@ -1,34 +1,37 @@
 package com.example.popularlibraries.model.room
 
-import android.util.Log
 import com.example.popularlibraries.model.GithubUser
 import com.example.popularlibraries.model.GithubUserRepository
+import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Single
-import timber.log.Timber
 
-class RoomGithubRepositoriesCache : IRoomGithubRepositoriesCache {
-    override fun cacheRoomRepos(
-        githubRepos: Single<List<GithubUserRepository>>,
-        db: RoomDB,
-        user: GithubUser
-    ) {
-        githubRepos.flatMap { repositories ->
-            Single.fromCallable {
-                val roomUser = db.userDao.findByLogin(user.login.orEmpty())
-                    ?: throw RuntimeException("User not found")
-                val roomRepos = repositories.map {
-                    RoomGithubRepository(
-                        id = it.id ?: "",
-                        name = it.name ?: "",
-                        forksCount = it.forks ?: 0,
-                        userId = roomUser.id
-                    )
-                }
-                db.repositoryDao.insert(roomRepos)
-                repositories.size.toString()
+class RoomGithubRepositoriesCache(private val database: RoomDB) : IRoomGithubRepositoriesCache {
+    override fun getUserRepos(user: GithubUser): Single<List<GithubUserRepository>> =
+        Single.fromCallable {
+            val roomUser = database.userDao.findByLogin(user.login.orEmpty() ?: error(""))
+            return@fromCallable database.repositoryDao.findForUser(roomUser?.id.orEmpty()).map {
+                GithubUserRepository(
+                    id = it.id,
+                    name = it.name,
+                    forks = it.forksCount
+                )
             }
-        }.map { it }.subscribe { s ->
-            Timber.log(Log.INFO, "Loaded %s repositories", s)
         }
-    }
+
+    override fun cacheRoomRepos(
+        user: GithubUser,
+        githubRepos: List<GithubUserRepository>
+    ): Completable =
+        Completable.fromAction {
+            val roomUser = database.userDao.findByLogin(user.login.orEmpty()) ?: error("")
+            val roomRepos = githubRepos.map {
+                RoomGithubRepository(
+                    id = it.id ?: "",
+                    name = it.name ?: "",
+                    forksCount = it.forks ?: -1,
+                    userId = roomUser.id
+                )
+            }
+            database.repositoryDao.insert(roomRepos)
+        }
 }

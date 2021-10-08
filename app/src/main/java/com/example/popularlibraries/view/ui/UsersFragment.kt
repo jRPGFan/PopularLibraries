@@ -10,6 +10,7 @@ import com.example.popularlibraries.databinding.FragmentUsersBinding
 import com.example.popularlibraries.model.GithubUsersRepo
 import com.example.popularlibraries.model.room.RoomDB
 import com.example.popularlibraries.model.room.RoomGithubUsersCache
+import com.example.popularlibraries.modules.components.UserSubcomponent
 import com.example.popularlibraries.presentation.UsersPresenter
 import com.example.popularlibraries.screens.AndroidScreens
 import com.example.popularlibraries.utils.AndroidNetworkStatus
@@ -23,12 +24,15 @@ class UsersFragment : MvpAppCompatFragment(), UsersView, BackButtonListener {
 
     private var _viewBinding: FragmentUsersBinding? = null
     private val viewBinding get() = _viewBinding!!
-    private val presenter by moxyPresenter {
-        UsersPresenter(
-            AndroidSchedulers.mainThread()
-        ).apply { App.instance.appComponent.inject(this) }
+    var userSubcomponent: UserSubcomponent? = null
+    private val presenter: UsersPresenter by moxyPresenter {
+        UsersPresenter().apply {
+            userSubcomponent = App.instance.initUserSubcomponent()
+            userSubcomponent?.inject(this)
+        }
     }
     private var adapter: UsersRVAdapter? = null
+
 
     override fun onCreateView(
         inflater: LayoutInflater,

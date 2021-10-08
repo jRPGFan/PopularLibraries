@@ -9,26 +9,16 @@ import io.reactivex.rxjava3.schedulers.Schedulers
 class GithubUsersRepo(
     private val api: IApiHolder,
     private val networkStatus: INetworkStatus,
-    private val usersCache: IRoomGithubUsersCache,
-    private val db: RoomDB
-) : IGithubUsersRepo {
-    override fun getUsers(): Single<List<GithubUser>> =
+    private val usersCache: IRoomGithubUsersCache
+) {
+    fun getUsers(): Single<List<GithubUser>> =
         networkStatus.isOnlineSingle().flatMap { isOnline ->
             if (isOnline) {
-                val users = api.apiService.getUsers()
-                usersCache.cacheRoomUsers(users)
-                return@flatMap users
-            } else {
-                Single.fromCallable {
-                    db.userDao.getAll().map { roomUser ->
-                        GithubUser(
-                            id = roomUser.id,
-                            login = roomUser.login,
-                            avatarUrl = roomUser.avatarUrl,
-                            reposUrl = roomUser.reposUrl
-                        )
-                    }
+                api.apiService.getUsers().flatMap { users ->
+                    usersCache.cacheRoomUsers(users).toSingleDefault(users)
                 }
+            } else {
+                usersCache.getRoomUsers()
             }
-        }.subscribeOn(Schedulers.io())
+        }
 }

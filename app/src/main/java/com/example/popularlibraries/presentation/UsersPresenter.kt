@@ -1,6 +1,7 @@
 package com.example.popularlibraries.presentation
 
 import android.util.Log
+import com.example.popularlibraries.App
 import com.example.popularlibraries.model.GithubUser
 import com.example.popularlibraries.model.GithubUserRepository
 import com.example.popularlibraries.model.GithubUsersRepo
@@ -9,14 +10,16 @@ import com.example.popularlibraries.screens.IScreens
 import com.example.popularlibraries.view.UserItemView
 import com.example.popularlibraries.view.ui.UsersView
 import com.github.terrakok.cicerone.Router
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Scheduler
+import io.reactivex.rxjava3.schedulers.Schedulers
 import moxy.MvpPresenter
 import timber.log.Timber
 import javax.inject.Inject
 
-class UsersPresenter(private val uiScheduler: Scheduler) : MvpPresenter<UsersView>() {
+class UsersPresenter : MvpPresenter<UsersView>() {
     @Inject
-    lateinit var usersRepo: IGithubUsersRepo
+    lateinit var usersRepo: GithubUsersRepo
     @Inject
     lateinit var router: Router
     @Inject
@@ -45,8 +48,14 @@ class UsersPresenter(private val uiScheduler: Scheduler) : MvpPresenter<UsersVie
         }
     }
 
+    override fun onDestroy() {
+        App.instance.releaseUserScope()
+        super.onDestroy()
+    }
+
     private fun loadData() {
-        usersRepo.getUsers().observeOn(uiScheduler)
+        usersRepo.getUsers().subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ users ->
                 usersListPresenter.users.clear()
                 usersListPresenter.users.addAll(users)
